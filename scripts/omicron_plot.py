@@ -62,7 +62,7 @@ def plot_omicron_share(df, reason, scale):
 
     fig, ax = plt.subplots(num=None, figsize=(6.75, 4), facecolor="w", edgecolor="k")
     plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.25)
-    sns.scatterplot(data=plot_df, x="date", y="share", hue="lineage", size="all")
+    sns.scatterplot(data=plot_df, x="date", y="share", hue="lineage", size="all", sizes=(10, 100))
     
     fig.text(
         0.51,
@@ -92,7 +92,7 @@ def plot_omicron_share(df, reason, scale):
     ax.get_legend().set_title("Proben-Anzahl")
     handles, labels = ax.get_legend_handles_labels()
     labels[0] = "Variante"
-    labels[len(lineages)+1] = "Sequenzen"
+    labels[len(lineages)+1] = "Gesamtzahl"
     ax.legend(handles, labels)
 
     locator = mdates.AutoDateLocator()
