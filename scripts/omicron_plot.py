@@ -8,6 +8,9 @@ import pandas as pd
 import seaborn as sns
 import numpy as np
 
+from pandas.plotting import register_matplotlib_converters
+register_matplotlib_converters()
+
 #%%
 df = pd.read_csv(
     "data/meta_lineages.csv",
@@ -36,10 +39,15 @@ df.rename(
     },
     inplace=True,
 )
+
+def collapse_pango(var):
+    if var[:5] == "BA.1.":
+        var = "BA.1"
+    # and so on...
+    return var
 #%%
 def plot_omicron_share(df, reason, scale):
-    lineages = ["BA.1", "BA.1.1", "BA.2", "BA.3"]
-
+    lineages = ["BA.1", "BA.2", "BA.3"]
     df_date = df[df.date > "2021-11-18"]
 
     if reason in ["N", "Y"]:
@@ -48,6 +56,12 @@ def plot_omicron_share(df, reason, scale):
         df_reason = df_date[df_date.reason.isin(["N", "X"])]
     else:
         df_reason = df_date
+    df_reason = df_reason.copy()
+
+    df_reason["lineage"] = df_reason["lineage"].apply(
+    lambda x: collapse_pango(x)
+    )
+    df_reason["lineage"] = df_reason["lineage"].astype("category")
 
     df_filter =  df_reason.loc[df_reason['lineage'].isin(lineages)]
    
@@ -57,7 +71,7 @@ def plot_omicron_share(df, reason, scale):
 
 
     plot_df = pd.merge(df_matches, daily_all, on="date")
-    plot_df["share"] = np.clip(plot_df["matches"] / plot_df["all"], 0.0, 0.999) # 1.0 cannot be shown on logit scale
+    plot_df["share"] = np.clip(plot_df["matches"] / plot_df["all"], 0.0, 0.99) # 1.0 cannot be shown on logit scale
     plot_df["lineage"].cat.remove_unused_categories(inplace=True)
 
     fig, ax = plt.subplots(num=None, figsize=(6.75, 4), facecolor="w", edgecolor="k")
