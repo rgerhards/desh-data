@@ -46,12 +46,14 @@ def plot_omicron_share(df, reason, scale):
         df_reason = df[df.reason.isin(["N", "X"])]
 
     daily_omicrons = df_reason.resample("D", on="date")["lineage"].apply(
-        lambda x: (x == "BA.1").sum()
+        lambda x: (x.str.match("BA\\.1|BA\\.1\\..*")).sum()
     )
     daily_all = df_reason.resample("D", on="date")["lineage"].count()
 
     plot_df = pd.concat({"omicrons": daily_omicrons, "all": daily_all}, axis=1)
     plot_df["omicron_share"] = plot_df["omicrons"] / plot_df["all"]
+    if scale == "logit":
+        plot_df["omicron_share"] = plot_df["omicron_share"].apply(lambda x: x if x < 0.99 else 0.99)
 
     fig, ax = plt.subplots(num=None, figsize=(6.75, 4), facecolor="w", edgecolor="k")
     plt.subplots_adjust(left=0.15, right=0.9, top=0.9, bottom=0.25)
